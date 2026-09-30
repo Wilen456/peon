@@ -9,7 +9,7 @@ import jobplatform.model.Job;
 
 @Service
 public class JobService {
-
+// will change this to accomodate sql
     private final List<Job> jobs = new ArrayList<>();// simulated database, just a list, but helpful for now.
     private Long nextId = 1L;
 
