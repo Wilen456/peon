@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.concurrent.ThreadLocalRandom;
+import java.time.Duration;
+import java.time.Instant;
 
 import jobplatform.model.JobStatus;
 import jobplatform.repository.JobRepository;
@@ -19,6 +21,7 @@ public class JobWorker {
     private static final long MAX_WORK_MILLIS = 10000; // slowest a job can take, arbitrary for testing
     private final JobRepository jobRepository;
     private final TransactionTemplate tx;
+    private static final Duration STALE_AFTER = Duration.ofSeconds(60);//timeout time, deliberately well above maxwork, arbitrary for testing
 
     public JobWorker(JobRepository jobRepository, TransactionTemplate tx) {
         this.jobRepository = jobRepository;
@@ -32,6 +35,7 @@ public class JobWorker {
             jobRepository.findNextQueuedForUpdate()
                 .map(job -> {
                     job.setStatus(JobStatus.RUNNING);
+                    job.setStartedAt(Instant.now());
                     return jobRepository.save(job).getId();
                 })
                 .orElse(null));
@@ -61,6 +65,16 @@ public class JobWorker {
             setStatus(jobId, JobStatus.FAILED);
         }
     }
+
+    @Scheduled(fixedDelay = 15000 )//every 15s, timeout and requeue the jobs.
+    public void requeueAbandonedJobs() {//reaper to kill lazy or failed peons and reassign their jobs to more worthy cantidates
+        Integer count = tx.execute(status ->
+            jobRepository.requeueStaleJobs(Instant.now().minus(STALE_AFTER)));
+        if (count != null && count > 0) {
+            log.warn("Requeued {} abandoned job(s)", count);
+        }
+    }
+
 
     private void setStatus(Long jobId, JobStatus newStatus) { //sets new status given jobid and whatever the new one is supposed to be.
         tx.executeWithoutResult(status ->

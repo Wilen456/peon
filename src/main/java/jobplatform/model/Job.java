@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.Instant;
 
 @Entity
 @Table(name = "jobs")
@@ -20,6 +21,13 @@ public class Job {
     @Enumerated(EnumType.STRING)
     private JobStatus status;
     //auto assign from jobstatus list, avoiding invalid statuses.
+
+    private Instant startedAt;
+
+    public Instant getStartedAt() { return startedAt; }//framework for timeouts
+    public void setStartedAt(Instant startedAt) { this.startedAt = startedAt; }
+
+
 
     protected Job() {} // required by JPA
 
