@@ -68,3 +68,4 @@ td.id { color: var(--muted); font-variant-numeric: tabular-nums; width: 72px; }
 .badge.running   { color: var(--running);   background: var(--running-bg); }
 .badge.completed { color: var(--completed); background: var(--completed-bg); }
 .badge.failed    { color: var(--failed);    background: var(--failed-bg); }
+.status-image { width: 32px; height: 32px; object-fit: contain; vertical-align: middle; }
