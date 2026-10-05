@@ -8,4 +8,5 @@ import jobplatform.model.Job;
 
 public interface JobRepository extends JpaRepository<Job, Long> {
     List<Job> findAllByOrderByIdAsc();
+    //list of jobs found in the database
 }
