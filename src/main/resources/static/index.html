@@ -38,6 +38,8 @@
   const addBtn = document.getElementById("add-btn");
   const errorEl = document.getElementById("error");
   const rows = document.getElementById("job-rows");
+    setInterval(loadJobs, 3000);
+
 
   async function loadJobs() {
     try {
