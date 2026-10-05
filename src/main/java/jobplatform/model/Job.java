@@ -1,6 +1,8 @@
 package jobplatform.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -14,17 +16,20 @@ public class Job {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String type;
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    private JobStatus status;
+    //auto assign from jobstatus list, avoiding invalid statuses.
 
     protected Job() {} // required by JPA
 
     public Job(String type) {
         this.type = type;
-        this.status = "QUEUED"; // auto-assigned on creation
+        this.status = JobStatus.QUEUED; // auto-assigned on creation
     }
 
     public Long getId() { return id; }
     public String getType() { return type; }
-    public String getStatus() { return status; }
-    public void setStatus(String newStatus) { this.status = newStatus; }
+    public JobStatus getStatus() { return status; }
+    public void setStatus(JobStatus newStatus) { this.status = newStatus; }
 }
