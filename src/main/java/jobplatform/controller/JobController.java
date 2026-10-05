@@ -12,6 +12,8 @@ import jobplatform.model.Job;
 import jobplatform.service.JobService;
 import jobplatform.dto.CreateJobRequest;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/jobs")//temporary routing. will change for later
 public class JobController {
@@ -29,7 +31,7 @@ public class JobController {
     }
     //calls on the jobservice to make a job, using the type provided by client.
     @PostMapping
-    public Job createJob(@RequestBody CreateJobRequest request) {
+    public Job createJob(@Valid @RequestBody CreateJobRequest request) {
         return jobService.createJob(request.getType());
 }
 }
