@@ -6,6 +6,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import jobplatform.model.JobStatus;
 import jobplatform.repository.JobRepository;
 
@@ -13,8 +15,8 @@ import jobplatform.repository.JobRepository;
 public class JobWorker {
 
     private static final Logger log = LoggerFactory.getLogger(JobWorker.class);
-    private static final long WORK_MILLIS = 5000; // pretend each job takes 5 seconds
-
+    private static final long MIN_WORK_MILLIS = 2000;  // fastest a job can take, arbitrary for testing
+    private static final long MAX_WORK_MILLIS = 10000; // slowest a job can take, arbitrary for testing
     private final JobRepository jobRepository;
     private final TransactionTemplate tx;
 
@@ -40,10 +42,15 @@ public class JobWorker {
 
         // Step 2: do the work, then record the outcome
         try {
-            log.info("Job {} started", jobId);
+            long workMillis = ThreadLocalRandom.current().nextLong(MIN_WORK_MILLIS, MAX_WORK_MILLIS + 1);
+            log.info("Job {} started (will take {} ms)", jobId, workMillis);
+            Thread.sleep(workMillis); // real work would go here
 
-            Thread.sleep(WORK_MILLIS); // real work would go here
-            
+            if (ThreadLocalRandom.current().nextInt(100) < 10) {
+                throw new IllegalStateException("Simulated failure");
+            }
+
+
             setStatus(jobId, JobStatus.COMPLETED);
             log.info("Job {} completed", jobId);
         } catch (InterruptedException e) {
