@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Job platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main>
+  <h1>Job platform</h1>
+  <p class="sub">Add a job by type and track its status.</p>
+
+  <form id="job-form">
+    <input type="text" id="job-type" placeholder="Job type, for example email or backup"
+           aria-label="Job type" maxlength="50" autocomplete="off">
+    <button type="submit" id="add-btn">Add job</button>
+  </form>
+  <p id="error" role="alert"></p>
+
+  <div class="list-head">
+    <h2>Jobs</h2>
+    <button type="button" class="secondary" id="refresh-btn">Refresh</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ID</th><th>Type</th><th>Status</th></tr></thead>
+      <tbody id="job-rows"></tbody>
+    </table>
+  </div>
+</main>
+
+<script>
+  const form = document.getElementById("job-form");
+  const typeInput = document.getElementById("job-type");
+  const addBtn = document.getElementById("add-btn");
+  const errorEl = document.getElementById("error");
+  const rows = document.getElementById("job-rows");
+
+  async function loadJobs() {
+    try {
+      const res = await fetch("/api/jobs");
+      if (!res.ok) throw new Error("Could not load jobs (error " + res.status + ").");
+      render(await res.json());
+    } catch (e) {
+      rows.innerHTML = "";
+      showEmpty(e.message || "Could not reach the server.");
+    }
+  }
+
+  function showEmpty(message) {
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = 3;
+    td.className = "empty";
+    td.textContent = message;
+    tr.appendChild(td);
+    rows.appendChild(tr);
+  }
+
+  function render(jobs) {
+    rows.innerHTML = "";
+    if (jobs.length === 0) {
+      showEmpty("No jobs yet. Add one above.");
+      return;
+    }
+    for (const job of jobs) {
+      const tr = document.createElement("tr");
+
+      const idTd = document.createElement("td");
+      idTd.className = "id";
+      idTd.textContent = job.id;
+
+      const typeTd = document.createElement("td");
+      typeTd.textContent = job.type; // textContent keeps user input from being run as HTML
+
+      const statusTd = document.createElement("td");
+      const badge = document.createElement("span");
+      badge.className = "badge " + String(job.status).toLowerCase();
+      badge.textContent = job.status;
+      statusTd.appendChild(badge);
+
+      tr.append(idTd, typeTd, statusTd);
+      rows.appendChild(tr);
+    }
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    errorEl.textContent = "";
+    addBtn.disabled = true;
+    try {
+      const res = await fetch("/api/jobs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: typeInput.value })
+      });
+      if (!res.ok) {
+        let message = "Could not add the job (error " + res.status + ").";
+        try { message = (await res.json()).error || message; } catch (_) {}
+        errorEl.textContent = message;
+        return;
+      }
+      typeInput.value = "";
+      typeInput.focus();
+      await loadJobs();
+    } catch (e) {
+      errorEl.textContent = "Could not reach the server. Is the app running?";
+    } finally {
+      addBtn.disabled = false;
+    }
+  });
+
+  document.getElementById("refresh-btn").addEventListener("click", loadJobs);
+  loadJobs();
+</script>
+</body>
+</html>
