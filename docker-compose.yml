@@ -6,10 +6,9 @@ services:
     expose:
       - "8080"
     environment:
-      # Derived from the same variables as the database, so they can't drift apart
-      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-jobsdb}
-      DB_USER: ${POSTGRES_USER:-jobs}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-jobs}
+      DB_URL: ${DB_URL:-jdbc:postgresql://db:5432/jobsdb}
+      DB_USER: ${DB_USER:-jobs}
+      DB_PASSWORD: ${DB_PASSWORD:-jobs}
     depends_on:
       db:
         condition: service_healthy
@@ -28,9 +27,10 @@ services:
   db:
     image: postgres:16
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-jobsdb}
-      POSTGRES_USER: ${POSTGRES_USER:-jobs}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jobs}
+      POSTGRES_DB: jobsdb
+      POSTGRES_USER: jobs
+      POSTGRES_PASSWORD: jobs
+      # for simplicity, passwords are coded here, for security, don't do this
     ports:
       - "127.0.0.1:5432:5432"   # reachable from this machine only, not from the network
     volumes:
