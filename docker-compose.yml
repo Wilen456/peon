@@ -6,7 +6,7 @@ services:
     expose:
       - "8080"
     environment:
-      DB_URL: ${DB_URL: -jdbc:postgresql://db:5432/jobsdb}
+      DB_URL: ${DB_URL:-jdbc:postgresql://db:5432/jobsdb}
       DB_USER: ${DB_USER:-jobs}
       DB_PASSWORD: ${DB_PASSWORD:-jobs}
     depends_on:
