@@ -17,7 +17,7 @@ cd peon
 docker compose up --build
 ```
 
-Open **http://localhost:8081**.
+Open **http://localhost:8082**.
 
 The first build takes a few minutes. It is ready when the log shows `Started JobPlatformApplication`. Stop it with `Ctrl+C`.
 
